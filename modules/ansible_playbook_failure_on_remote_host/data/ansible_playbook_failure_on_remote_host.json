@@ -1,0 +1,194 @@
+{
+  "name": "ansible_playbook_failure_on_remote_host",
+  "description": "This incident type refers to a problem encountered while attempting to run an Ansible playbook on a remote host. The issue may be related to SSH or inventory problems. This can result in the playbook not being executed properly, leading to potential failures or errors. Troubleshooting is required to identify and resolve the root cause of the issue.",
+  "params": [
+    {
+      "name": "SSH_KEY_FILE",
+      "value": ""
+    },
+    {
+      "name": "PLAYBOOK_FILE_PATH",
+      "value": ""
+    },
+    {
+      "name": "SSH_PORT",
+      "value": ""
+    },
+    {
+      "name": "ANSIBLE_USER",
+      "value": ""
+    },
+    {
+      "name": "INVENTORY_FILE_PATH",
+      "value": ""
+    },
+    {
+      "name": "REMOTE_HOST",
+      "value": ""
+    },
+    {
+      "name": "HOST_NAME",
+      "value": ""
+    },
+    {
+      "name": "K8S_CLUSTER_NAME",
+      "value": ""
+    },
+    {
+      "name": "NAMESPACE",
+      "value": ""
+    }
+  ],
+  "cells": [
+    {
+      "name": "cell_1",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Ansible Playbook Failure on Remote Host\nThis incident type refers to a problem encountered while attempting to run an Ansible playbook on a remote host. The issue may be related to SSH or inventory problems. This can result in the playbook not being executed properly, leading to potential failures or errors. Troubleshooting is required to identify and resolve the root cause of the issue."
+    },
+    {
+      "name": "cell_2",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check if remote host is reachable"
+    },
+    {
+      "name": "cell_3",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `ping ${REMOTE_HOST}`"
+    },
+    {
+      "name": "cell_4",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check if the ssh key is added to the ssh-agent"
+    },
+    {
+      "name": "cell_5",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `ssh-add -l`"
+    },
+    {
+      "name": "cell_6",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check if the ssh key is authorized on the remote host"
+    },
+    {
+      "name": "cell_7",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `ssh -i ${SSH_KEY_FILE} ${ANSIBLE_USER}@${REMOTE_HOST} \"echo 'Authorized'\"`"
+    },
+    {
+      "name": "cell_8",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check if the ssh key has correct permissions"
+    },
+    {
+      "name": "cell_9",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `stat ${SSH_KEY_FILE}`"
+    },
+    {
+      "name": "cell_10",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check if ssh connection can be established"
+    },
+    {
+      "name": "cell_11",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `ssh -vvv ${ANSIBLE_USER}@${REMOTE_HOST}`"
+    },
+    {
+      "name": "cell_12",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check if ansible is installed and its version"
+    },
+    {
+      "name": "cell_13",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `ansible --version`"
+    },
+    {
+      "name": "cell_14",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check if the Ansible user has the necessary permissions on the remote host"
+    },
+    {
+      "name": "cell_15",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `ansible ${REMOTE_HOST} -m command -a \"sudo -l -U ansible\"`"
+    },
+    {
+      "name": "cell_16",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check if the inventory file exists"
+    },
+    {
+      "name": "cell_17",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `if [ -f ${INVENTORY_FILE_PATH} ]; then echo \"File exists\"; else echo \"File does not exist\"; fi`"
+    },
+    {
+      "name": "cell_18",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check if the playbook runs successfully on the localhost"
+    },
+    {
+      "name": "cell_19",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `ansible-playbook ${PLAYBOOK_FILE_PATH} -i ${INVENTORY_FILE_PATH} --limit localhost`"
+    },
+    {
+      "name": "cell_20",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## The Ansible playbook may have syntax errors or incorrect configuration that is not compatible with the remote host."
+    },
+    {
+      "name": "cell_21",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "host | host_name=$HOST_NAME | invoke_ansible_syntax_check($PLAYBOOK_FILE_PATH, $INVENTORY_FILE_PATH)"
+    },
+    {
+      "name": "cell_22",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Open the ssh port if not open on the firewall of the remote host"
+    },
+    {
+      "name": "cell_23",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "host | host_name=$HOST_NAME | invoke_ssh_port_firewall_mgmt($SSH_PORT, $REMOTE_HOST)"
+    },
+    {
+      "name": "cell_24",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Ensure that the SSH key is configured correctly on the remote host and on the Ansible server"
+    },
+    {
+      "name": "cell_25",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "host | host_name=$HOST_NAME | invoke_configure_ssh_keys($SSH_KEY_FILE, $ANSIBLE_USER, $REMOTE_HOST)"
+    }
+  ]
+}
